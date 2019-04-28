@@ -3,6 +3,7 @@ Gradient Backpropagation Through Categorical Variables]
 
 # Data sets
 The MNIST data is  self-contained and the Omniglot data is in the repository. <br />
+RL data is from OpenAI Gym
 
 # Citations
 
