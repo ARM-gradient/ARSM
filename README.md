@@ -9,10 +9,14 @@ RL data is from OpenAI Gym
 
 Below are the paper to cite if you find the algorithms in this repository useful in your own research:
 
-@inproceedings{ARSM_ICML2019,
-  title={{ARSM}: {A}ugment-{REINFORCE}-swap-merge estimator for gradient backpropagation through categorical variables},
+@inproceedings{ARSM_ICML2019,       
+
+  title={{ARSM}: {A}ugment-{REINFORCE}-swap-merge estimator for gradient backpropagation through categorical variables},    
+  
   author={Mingzhang Yin and Yuguang Yue and Mingyuan Zhou},
+  
   booktitle={ICML},
+  
   year={2019}
 }
 
