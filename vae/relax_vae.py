@@ -50,7 +50,7 @@ def lrelu(x, alpha=0.1):
 
 def encoder(x,b_dim,reuse=False):
     with tf.variable_scope("encoder", reuse = reuse):
-        h2 = slim.stack(x, slim.fully_connected,[200,200],activation_fn=lrelu)
+        h2 = slim.stack(x, slim.fully_connected,[256,512],activation_fn=lrelu)
         log_alpha = tf.layers.dense(h2, b_dim, activation=None)
     return log_alpha
 
@@ -58,7 +58,7 @@ def encoder(x,b_dim,reuse=False):
 def decoder(b,x_dim,reuse=False):
     #return logits
     with tf.variable_scope("decoder", reuse = reuse):
-        h2 = slim.stack(b ,slim.fully_connected,[200,200],activation_fn=lrelu)
+        h2 = slim.stack(b ,slim.fully_connected,[512, 256],activation_fn=lrelu)
         log_alpha = tf.layers.dense(h2, x_dim, activation=None)
     return log_alpha
 
