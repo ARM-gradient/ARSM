@@ -152,7 +152,7 @@ if __name__ == "__main__":
         
         for i in range(total_batch):
             train_xs,_ = train_data.next_batch(batch_size)   
-            _,cost,_ = sess.run([train_op,loss,tau],{x:train_xs,lr:np_lr})
+            _,cost,_ = sess.run([train_op,loss,tau],{x0:train_xs,lr:np_lr})
             record.append(cost)
             step += 1
         
