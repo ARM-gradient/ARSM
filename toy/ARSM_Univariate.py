@@ -312,7 +312,7 @@ for iter in range(IterMax):
             var_ars.append(grad_arsz)
             
             action_truez = np.argmin(np.log(piz)-phi_arsm)
-            pseudo_actionsz= pseudo_action_swap_matrix(pi,phi_arsm) 
+            pseudo_actionsz= pseudo_action_swap_matrix(piz,phi_arsm) 
             Fz=fun(pseudo_actionsz,C,r) 
             meanFz = np.mean(Fz,axis=0)
             grad_arsmz = np.matmul(Fz-meanFz,1.0/C-piz) 
