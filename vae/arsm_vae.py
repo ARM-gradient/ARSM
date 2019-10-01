@@ -122,7 +122,7 @@ tf.reset_default_graph()
 
 x_dim = 784
 n_class = 10 ; n_cv = 20  # # of classes and # of cat variables
-z_dim = n_cv * (n_class-1)   # # of latent parameters neede for one cat var is n_cat-1
+z_dim = n_cv * (n_class-1)   # # of latent parameters needed for one cat var is n_cat-1
 z_concate_dim = n_cv * n_class
 
 eps = 1e-10
@@ -147,7 +147,7 @@ b_sample = tf.cast(b_sample,tf.float32)
 
 x_star_b = x_binary 
 gen_loss0 = fun(x_star_b,b_sample,prior_logit0,z_concate,reuse_decoder= False)
-#average over N
+
 gen_loss = tf.reduce_mean(gen_loss0) #average over N
 gen_opt = tf.train.AdamOptimizer(lr)
 gen_vars = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope='decoder')
@@ -178,16 +178,12 @@ alpha_grads = tf.reshape(alpha_grads0[:,:,1:],[-1,z_dim])
 alpha_grads = tf.reshape(alpha_grads,[-1,z_dim])
 inf_vars = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope='encoder')
 
-inf_grads = tf.gradients(z0, inf_vars, grad_ys=alpha_grads)#/b_s
+inf_grads = tf.gradients(z0, inf_vars, grad_ys=alpha_grads)
 inf_gradvars = zip(inf_grads, inf_vars)
 inf_opt = tf.train.AdamOptimizer(lr)
 inf_train_op = inf_opt.apply_gradients(inf_gradvars)
 
-prior_train_op = tf.train.GradientDescentOptimizer(learning_rate=0.01).minimize(gen_loss,var_list=[prior_logit0])
 
-
-#with tf.control_dependencies([gen_train_op, inf_train_op, prior_train_op]):
-#    train_op = tf.no_op()
 with tf.control_dependencies([gen_train_op, inf_train_op]):
     train_op = tf.no_op()
     
