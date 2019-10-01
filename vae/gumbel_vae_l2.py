@@ -172,7 +172,7 @@ def get_loss(sess,data,total_batch):
     cost_eval = []                  
     for j in range(total_batch):
         xs, _ = data.next_batch(batch_size)  
-        cost_eval.append(sess.run(neg_elbo0,{x:xs}))
+        cost_eval.append(sess.run(neg_elbo0,{x0:xs}))
     return np.mean(cost_eval)
 
 
