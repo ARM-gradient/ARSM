@@ -1,8 +1,6 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-#large C = 1000; in paper C =30
-
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -11,18 +9,13 @@ import numpy as np
 from matplotlib import pyplot as plt
 import tensorflow as tf
 import random
-#%matplotlib qt
-
-import warnings
-warnings.filterwarnings('ignore')
 slim=tf.contrib.slim
 
-
-IterMax = 200
+IterMax = 5000
 stepsize = 1
-C= 1000
-r= 1000
-seedi = 5
+C= 30
+r= 30
+seedi = 10
 tf.set_random_seed(seedi)
 np.random.seed(seedi)
 random.seed(seedi)
@@ -39,9 +32,8 @@ def pseudo_action_swap_matrix(pi,phi):
     RaceAllSwap = np.log(pi[:,np.newaxis])-phi[np.newaxis,:]
     Race = np.diag(RaceAllSwap)
     action_true = np.argmin(Race)
-    Race_min = Race[action_true]
-    
-    if C<7: # True: #True:
+    Race_min = Race[action_true]    
+    if C<7:
         #Slow version for large C
         pseudo_actions=np.full((C, C), action_true)
         for m in range(C):
@@ -90,56 +82,33 @@ def pseudo_action_swap_vector(pi,phi,Cat_ref):
 
 
 phi_init = np.zeros(C)
-#phi_init = np.random.normal(0,1,C)
-#phi_init = np.arange(C,0,-1)/C-0.5
-#phi_init[0]=3
 
 phi_true = phi_init.copy()
-phi_true_record=[]
 prob_true_record=[]
 reward_expected_true_record=[]
 grad_true_record=[]
 
 phi_REINFORCE = phi_init.copy()
-phi_REINFORCE_record=[]
 prob_REINFORCE_record=[]
 reward_expected_REINFORCE_record=[]
 grad_REINFORCE_record=[]
 
 phi_ar = phi_init.copy()
-phi_ar_record=[]
 prob_ar_record=[]
 reward_expected_ar_record=[]
 grad_ar_record=[]
 
 phi_ars = phi_init.copy()
-phi_ars_record=[]
 prob_ars_record=[]
 reward_expected_ars_record=[]
 grad_ars_record=[]
 
 phi_arsm = phi_init.copy()
-phi_arsm_record=[]
 prob_arsm_record=[]
 reward_expected_arsm_record=[]
 grad_arsm_record=[]
 
-
-Fun = fun(np.arange(C),C,r)
-
-
-sess=tf.InteractiveSession()
-sess.run(tf.global_variables_initializer())    
-
-phi_gs_record=[]
-prob_gs_record=[]
-grad_gs_record=[]
-reward_expected_gs_record=[]
-########################################
-
 idx = []
-
-
 VAR_reinforce = []
 VAR_ar = []
 VAR_ars = []
@@ -147,20 +116,14 @@ VAR_arsm = []
 VAR_gumbel = []
 
 
-snr_reinforce = []
-snr_ar = []
-snr_ars = []
-snr_arsm = []
-snr_gumbel = []
+Fun = fun(np.arange(C),C,r)
 
-pseudo_prop = []
-entropy = []
-pseudo_prop2 = []
+sess=tf.InteractiveSession()
+sess.run(tf.global_variables_initializer())    
 
 for iter in range(IterMax):
-
-    pi =  np.random.dirichlet(np.ones(C))
     
+    pi =  np.random.dirichlet(np.ones(C))    
     #########    
     #gradient ascent with true grad
     prob_true = softmax(phi_true)
@@ -170,7 +133,6 @@ for iter in range(IterMax):
     prob_true = softmax(phi_true)
     reward_expected_true = np.sum(prob_true*Fun)
     
-    phi_true_record.append(phi_true)
     prob_true_record.append(prob_true)
     reward_expected_true_record.append(reward_expected_true)
     grad_true_record.append(grad_true)   
@@ -188,7 +150,6 @@ for iter in range(IterMax):
     prob_REINFORCE = softmax(phi_REINFORCE)
     reward_expected_REINFORCE = np.sum(prob_REINFORCE*Fun)
     
-    phi_REINFORCE_record.append(phi_REINFORCE)
     prob_REINFORCE_record.append(prob_REINFORCE)
     reward_expected_REINFORCE_record.append(reward_expected_REINFORCE)
     grad_REINFORCE_record.append(grad_REINFORCE)  
@@ -202,7 +163,6 @@ for iter in range(IterMax):
     prob_ar= softmax(phi_ar)
     reward_expected_ar = np.sum(prob_ar*Fun)
     
-    phi_ar_record.append(prob_ar)
     prob_ar_record.append(prob_ar)
     reward_expected_ar_record.append(reward_expected_ar)
     grad_ar_record.append(grad_ar)  
@@ -219,7 +179,6 @@ for iter in range(IterMax):
     prob_ars = softmax(phi_ars)
     reward_expected_ars = np.sum(prob_ars*Fun)
     
-    phi_ars_record.append(prob_ars)
     prob_ars_record.append(prob_ars)
     reward_expected_ars_record.append(reward_expected_ars)
     grad_ars_record.append(grad_ars)  
@@ -228,9 +187,7 @@ for iter in range(IterMax):
     #########
     #gradient ascent with ARSM grad       
     pseudo_actions, true_action = pseudo_action_swap_matrix(pi,phi_arsm)    
-    
-    
-    
+      
     if True:
         #Slow version if evaluate function is expensive
         F=fun(pseudo_actions,C,r)   
@@ -241,27 +198,20 @@ for iter in range(IterMax):
         for action in unique_pseudo_actions:
             F[pseudo_actions==action]=fun(action,C,r)
     meanF = np.mean(F,axis=0)
-    #grad_arsm=np.transpose(np.matmul(F-meanF,1.0/C-pi[:,np.newaxis]))[0]
     grad_arsm = np.matmul(F-meanF,1.0/C-pi)   
     
     phi_arsm = phi_arsm + stepsize * grad_arsm
     prob_arsm = softmax(phi_arsm)
     reward_expected_arsm = np.sum(prob_arsm*Fun)
     
-    phi_arsm_record.append(prob_arsm)
     prob_arsm_record.append(prob_arsm)
     reward_expected_arsm_record.append(reward_expected_arsm)
     grad_arsm_record.append(grad_arsm)  
-    
-    pseudo_prop.append(np.sum(pseudo_actions != true_action) / (C*(C-1)))
-    entropy.append(np.sum(- prob_arsm*np.log(prob_arsm + 1e-10)))
-    pseudo_prop2.append(len(np.unique(pseudo_actions)) / C)
-    
-    
-    if iter%10 == 0:
+     
+    if iter%100 == 0:
         print("Iter: " + str(iter))
     
-    if iter % 20 == 0:
+    if iter % 100 == 0:
         idx.append(iter)
         var_reinforce = []
         var_ar = []
@@ -269,18 +219,14 @@ for iter in range(IterMax):
         var_arsm = []
         var_gumbel = []
         for j in range(100):
-            #piz = np.random.exponential(np.ones(C))
-            #piz = piz/np.sum(piz)
             piz = np.random.dirichlet(np.ones(C))
             
             action_truez = np.argmin(np.log(piz)-phi_REINFORCE)
             onehotz =np.zeros(C)
             onehotz[action_truez]=1
-            #prob_REINFROCE = softmax(phi_REINFORCE)
             grad_REINFORCEz=Fun[action_truez]*(onehotz-prob_REINFROCE)            
             var_reinforce.append(grad_REINFORCEz)
-            
-            
+                     
             action_truez = np.argmin(np.log(piz)-phi_ar)
             grad_arz=Fun[action_truez]*(1-piz)
             var_ar.append(grad_arz)
@@ -292,7 +238,7 @@ for iter in range(IterMax):
             var_ars.append(grad_arsz)
             
             action_truez = np.argmin(np.log(piz)-phi_arsm)
-            pseudo_actionsz, _= pseudo_action_swap_matrix(piz,phi_arsm) 
+            pseudo_actionsz, _= pseudo_action_swap_matrix(piz,phi_arsm)  #change pi to piz
             Fz=fun(pseudo_actionsz,C,r) 
             meanFz = np.mean(Fz,axis=0)
             grad_arsmz = np.matmul(Fz-meanFz,1.0/C-piz) 
@@ -306,32 +252,27 @@ for iter in range(IterMax):
         
         mean = np.mean(var_reinforce,axis=0)
         std = np.std(var_reinforce,axis=0)
-        snr_reinforce.append(np.abs(mean)/std)
         
         mean = np.mean(var_ar,axis=0)
         std = np.std(var_ar,axis=0)
-        snr_ar.append(np.abs(mean)/std)
         
         mean = np.mean(var_ars,axis=0)
         std = np.std(var_ars,axis=0)
-        snr_ars.append(np.abs(mean)/std)
 
         mean = np.mean(var_arsm,axis=0)
         std = np.std(var_arsm,axis=0)
-        snr_arsm.append(np.abs(mean)/std)
 
 
 #%%
-
 f, [[ax11,ax12,ax13,ax14,ax15],[ax21,ax22,ax23,ax24,ax25], [ax31,ax32,ax33,ax34,ax35],\
     [ax41,ax42,ax43,ax44,ax45]] \
         = plt.subplots(4, 5,sharex=True,figsize=(12,6))    
 
-ax11.set_title('True',fontsize='x-large')
-ax12.set_title('REINFORCE',fontsize='x-large')
-ax13.set_title('AR',fontsize='x-large')
-ax14.set_title('ARS',fontsize='x-large')
-ax15.set_title('ARSM',fontsize='x-large')
+ax11.set_title('True',fontsize='x-large',y=1.1)
+ax12.set_title('REINFORCE',fontsize='x-large',y=1.1)
+ax13.set_title('AR',fontsize='x-large',y=1.1)
+ax14.set_title('ARS',fontsize='x-large',y=1.1)
+ax15.set_title('ARSM',fontsize='x-large',y=1.1)
 
     
 ax11.plot(reward_expected_true_record,label = 'True');
@@ -341,16 +282,12 @@ ax14.plot(reward_expected_ars_record, label = 'ARS');
 ax15.plot(reward_expected_arsm_record, label = 'ARSM');
 ax11.set_ylabel('Reward',fontsize='x-large') 
 
-
-
 ax21.plot(np.vstack(grad_true_record)[:,(0,-1)],label = 'True',alpha=1); 
 ax22.plot(np.vstack(grad_REINFORCE_record)[:,(0,-1)], label = 'REINFORCE',alpha=0.3);
 ax23.plot(np.vstack(grad_ar_record)[:,(0,-1)], label = 'AR',alpha=0.3);
 ax24.plot(np.vstack(grad_ars_record)[:,(0,-1)], label = 'ARS',alpha=0.3);
 ax25.plot(np.vstack(grad_arsm_record)[:,(0,-1)], label = 'ARSM',alpha=0.3);
 ax21.set_ylabel('Gradient',fontsize='x-large') 
-
-
 
 ax31.semilogy(np.vstack(prob_true_record)[:,(0,-1)],label = 'True'); 
 ax32.semilogy(np.vstack(prob_REINFORCE_record)[:,(0,-1)], label = 'REINFORCE');
@@ -371,29 +308,12 @@ plt.tight_layout(w_pad=0.02, h_pad=0.01)
 plt.subplots_adjust(wspace=0.35, hspace=0.2)
 f.text(0.5, 0.004, 'Iteration', ha='center',fontsize='x-large')
 
-l1 = np.min(reward_expected_arsm_record); r1 = np.max(reward_expected_arsm_record);
-ax11.set_ylim([l1,r1])
-ax12.set_ylim([l1,r1])
-ax13.set_ylim([l1,r1])
-ax14.set_ylim([l1,r1])
-ax15.set_ylim([l1,r1])
-
-
-l3 = 0; r3 = 1;
-ax31.set_ylim([l3,r3])
-ax32.set_ylim([l3,r3])
-ax33.set_ylim([l3,r3])
-ax34.set_ylim([l3,r3])
-ax35.set_ylim([l3,r3])
-
-
 ax21.yaxis.get_major_formatter().set_powerlimits((0,3))
 
 for ax in [ax41,ax42,ax43,ax44,ax45]:
     ax.yaxis.get_major_formatter().set_powerlimits((0,3))
 for ax in [ax21,ax22,ax23,ax24,ax25]:
     ax.yaxis.get_major_formatter().set_powerlimits((0,2))
-
 
 plt.tight_layout()
 
