@@ -125,12 +125,10 @@ def compt_F(sess, dirich, logits, xs):
 tf.reset_default_graph() 
 
 x_dim = 784
+eps = 1e-10
 n_class = args.n_class ; n_cv = args.n_cv  
 z_dim = n_cv * (n_class-1)  
 z_concate_dim = n_cv * n_class
-
-eps = 1e-10
-lr = args.lr
 
 prior_logit0 = tf.get_variable("p_b_logit", dtype=tf.float32,initializer=tf.zeros([n_cv,n_class]))
 
@@ -176,10 +174,10 @@ inf_vars = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope='encoder')
 
 inf_grads = tf.gradients(z0, inf_vars, grad_ys=alpha_grads)
 inf_gradvars = zip(inf_grads, inf_vars)
-inf_opt = tf.train.AdamOptimizer(lr)
+inf_opt = tf.train.AdamOptimizer(args.lr)
 inf_train_op = inf_opt.apply_gradients(inf_gradvars)
 
-prior_train_op = tf.train.GradientDescentOptimizer(learning_rate=0.01).minimize(gen_loss,var_list=[prior_logit0])
+#prior_train_op = tf.train.GradientDescentOptimizer(learning_rate=0.01).minimize(gen_loss,var_list=[prior_logit0])
 
 with tf.control_dependencies([gen_train_op, inf_train_op]):
     train_op = tf.no_op()
