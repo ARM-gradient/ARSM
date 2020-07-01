@@ -215,7 +215,7 @@ for iter in range(IterMax):
     #########
     #gradient ascent with Augment-REINFORCE (AR) grad
     action_true = np.argmin(np.log(pi)-phi_ar)
-    grad_ar=Fun[action_true]*(1-pi)
+    grad_ar=Fun[action_true]*(1-C*pi) #changed from grad_ar=Fun[action_true]*(1-pi)
     phi_ar = phi_ar + stepsize * grad_ar
     prob_ar= softmax(phi_ar)
     reward_expected_ar = np.sum(prob_ar*Fun)
@@ -302,7 +302,7 @@ for iter in range(IterMax):
             
             
             action_truez = np.argmin(np.log(piz)-phi_ar)
-            grad_arz=Fun[action_truez]*(1-piz)
+            grad_arz=Fun[action_truez]*(1-C*piz) #changed from grad_arz=Fun[action_truez]*(1-piz)
             var_ar.append(grad_arz)
             
             Ref_catz=np.random.randint(C)
